@@ -1,0 +1,146 @@
+import tkinter as tk
+from tkinter import *
+from tkinter import ttk
+from tkinter.filedialog import askopenfilename
+from PIL import ImageTk, Image
+import shutil
+import errno
+import tempfile
+from tkinter.messagebox import *
+
+collage = Image.new("RGBA", (1500, 1500), color=(255, 255, 255, 255))
+root = tk.Tk()
+root.title("Image Collager")
+root.geometry('700x700')
+icon = PhotoImage(file="C:\\Users\\Anwesha Pramanik\\Pictures\\Camera Roll\\Your Collager.png")
+root.iconphoto(False, icon)
+my_font = ('times', 18, 'bold')
+
+# wrapper1 = LabelFrame(root)
+# canvas = Canvas(wrapper1)
+# canvas.pack(side=LEFT,fill="both",expand="yes")
+#
+# yscrollbar = ttk.Scrollbar(wrapper1, orient="vertical", command=canvas.yview)
+# yscrollbar.pack(side=RIGHT, fill="y")
+# canvas.configure(yscrollcommand=yscrollbar.set)
+#
+# xscrollbar = ttk.Scrollbar(wrapper1, orient="horizontal", command=canvas.xview)
+# xscrollbar.pack(side=BOTTOM, fill="x")
+# canvas.configure(xscrollcommand=xscrollbar.set)
+#
+# canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox('all')))
+#
+# myframe = Frame(canvas)
+# canvas.create_window((0,0),window=myframe,anchor="nw")
+#
+# wrapper1.pack(fill="both", expand="yes", padx=10, pady=10)
+
+# canvas = tk.Canvas(root, scrollregion=(0, 0, 20000, 20000))
+# canvas.grid(row=0, column=0, sticky='nsew')
+# canvas.config(width=10000,height=10000)
+# canvas.bind('<Configure>',lambda e:canvas.config(scrollregion=canvas.bbox('all')))
+#
+# y_scroll = tk.Scrollbar(root, orient='vertical', command=canvas.yview)
+# y_scroll.grid(row=0, column=1, sticky='ns')
+# x_scroll = tk.Scrollbar(root, orient='horizontal', command=canvas.xview)
+# x_scroll.grid(row=1, column=0, sticky='ew')
+# canvas.config(xscrollcommand=x_scroll.set, yscrollcommand=y_scroll.set)
+
+frame = Frame(root)
+frame.grid(row=20,column=9000)
+
+l1 = tk.Label(root, text='Create Collage', width=30, font=my_font)
+l1.grid(row=1, column=9500)
+l2 = tk.Label(root, text='Atleast select two images to create the collage!', font='times 12')
+l2.grid(row=2, column=9500)
+
+b1 = tk.Button(frame, text='Upload', width=20, command=lambda: upload_file())
+b1.grid(row=20,column=8000,sticky='NE')
+b2 = tk.Button(frame, text='Create Collage', width=20, command=lambda: photo_collage())
+b2.grid(row=20,column=9500,sticky='SE')
+
+lst = []
+
+
+def upload_file():
+    # f_types = [('Jpg files', '*.jpg'), ('PNG files', '*.png')]
+    filename = tk.filedialog.askopenfilename(multiple=True, title='Select a file', filetypes=(
+        ('Jpg files', '*.jpg'), ('PNG files', '*.png'), ('JPEG files', '*.jpeg')))
+    print(filename)
+
+    col = 1
+    row = 4
+    j = 0
+
+    for f in filename:
+        img = Image.open(f)
+        # create a new temp.folder
+        try:
+            tmp_dir = tempfile.mkdtemp()
+        finally:
+            try:
+                shutil.rmtree(tmp_dir)
+
+                new_file = "img" + str(j)
+                ext = ".jpg"
+                new_file = str(j)
+                new_file = new_file + ext
+                print(new_file)
+                img.save(new_file)
+                lst.append(new_file)
+                j = j + 1
+            except OSError as exc:
+                if exc.errno != errno.ENOENT:
+                    raise
+
+        # resize image
+        width, height = img.size
+        if width >= 2000 and height >= 2000:
+            nwidth = int(width / 5)
+            nheight = int(height / 5)
+        elif width <= 1000 and height <= 1000:
+            nwidth = int(width / 3)
+            nheight = int(height / 3)
+        else:
+            nwidth = int(width / 2)
+            nheight = int(height / 2)
+
+        resized_img = img.resize((nwidth, nheight))
+        img = ImageTk.PhotoImage(resized_img)
+        e1 = tk.Label(root)
+        e1.grid(row=row, column=col)
+        e1.image = img
+        e1['image'] = img
+        if col == 3:
+            row = row + 50
+            col = 1
+        else:
+            col = col + 90
+
+
+def photo_collage():
+    c = 0
+    if len(lst) > 1:
+        if len(lst) < 10:
+            for i in range(0, 1500, 500):
+                for j in range(0, 1500, 500):
+                    if c < len(lst):
+                        print(lst)
+                        print(len(lst))
+                        print(c)
+                        file = lst[c]
+                        print(file)
+                        photo = Image.open(file)
+
+                        photo = photo.resize((490, 675))
+                        collage.paste(photo, (i, j))
+                        c += 1
+            collage.show()
+            collage.save("C:/Users/Anwesha Pramanik/Documents/collage.png")
+        else:
+            print(showerror("Error", "A collage of up to 9 images can be created."))
+    else:
+        print(showerror("Error", "Can't create collage"))
+
+
+root.mainloop()
